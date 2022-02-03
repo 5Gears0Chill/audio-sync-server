@@ -1,5 +1,6 @@
 using AudioSync.API.DependencyInjection;
 using AudioSync.Repository.DbContexts;
+using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,10 @@ namespace AudioSync.Web
                 options.UseSqlServer(Configuration["DataConnections:ConnectionString_Core"]);
             }, ServiceLifetime.Scoped);
             services.AddControllersWithViews();
+
+            services.AddHangfire(x => x.UseSqlServerStorage(Configuration["DataConnections:ConnectionString_Core"]));
+            services.AddHangfireServer();
+            services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -53,6 +58,8 @@ namespace AudioSync.Web
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseHangfireDashboard("/hangfire");
 
             app.UseEndpoints(endpoints =>
             {
