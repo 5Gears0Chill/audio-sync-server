@@ -36,6 +36,7 @@ namespace AudioSync.Web
 
             services.AddHangfire(x => x.UseSqlServerStorage(Configuration["DataConnections:ConnectionString_Core"]));
             services.AddHangfireServer();
+            services.AddSignalR();
             services.AddControllers();
         }
 
