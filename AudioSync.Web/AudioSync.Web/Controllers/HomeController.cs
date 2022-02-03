@@ -1,10 +1,11 @@
-﻿using AudioSync.Web.Models;
+﻿using AudioSync.Core.DataAccess.Entities;
+using AudioSync.Core.DataAccess.Models;
+using AudioSync.Core.Interfaces.DataAccess;
+using AudioSync.Core.Interfaces.Repositories;
+using AudioSync.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace AudioSync.Web.Controllers
@@ -13,14 +14,25 @@ namespace AudioSync.Web.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IUnitOfWorkManager unitOfWorkManager)
         {
             _logger = logger;
+            _unitOfWorkManager = unitOfWorkManager;
         }
 
-        public IActionResult Index()
+        private readonly IUnitOfWorkManager _unitOfWorkManager;
+
+        
+
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var result = await _unitOfWorkManager.ExecuteSingleAsync<IDeviceRepository, DataResult<Device>>(x => x.SaveDeviceAsync(new Device
+                        {
+                            DeviceId = "A New Random String",
+
+                        }));
+
+                return View();
         }
 
         public IActionResult Privacy()
