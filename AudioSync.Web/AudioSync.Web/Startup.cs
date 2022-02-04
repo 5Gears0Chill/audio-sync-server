@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
+using System.Net;
+using System.Net.WebSockets;
 
 namespace AudioSync.Web
 {
@@ -62,6 +65,13 @@ namespace AudioSync.Web
             app.UseAuthorization();
 
             app.UseHangfireDashboard("/hangfire");
+            
+            
+            var webSocketOptions = new WebSocketOptions()
+            {
+                KeepAliveInterval = TimeSpan.FromMinutes(10),
+            };
+            app.UseWebSockets();
 
             app.UseEndpoints(endpoints =>
             {
