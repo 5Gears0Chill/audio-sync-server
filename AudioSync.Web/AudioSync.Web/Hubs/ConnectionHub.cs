@@ -21,6 +21,39 @@ namespace AudioSync.Web.Hubs
 
         #region Methods
 
+        /// <summary>
+        /// OnConnect add connection to user list
+        /// </summary>
+        /// <returns></returns>
+        public override async Task OnConnectedAsync()
+        {
+            string connectionId = Context.ConnectionId;
+            UserSoundModel user = new UserSoundModel()
+            {
+                UserIdentifier = connectionId,
+                TimeOfReceiving = DateTime.Now
+            };
+            userSoundModels.Add(user);            
+            await Clients.All.SendAsync("ReceiveMessage", string.Format("User {0} joined at {1}", connectionId, DateTime.Now));
+            //await Clients.All.SendAsync("ReceiveObject", userSoundModels);            
+        }
+
+        /// <summary>
+        /// OnDisconnect remove connection from user list
+        /// </summary>
+        /// <param name="ex"></param>
+        /// <returns></returns>
+        public override async Task OnDisconnectedAsync(Exception ex)
+        {
+            string connectionId = Context.ConnectionId;
+            var userToRemove = userSoundModels.SingleOrDefault(u => u.UserIdentifier.Equals(connectionId));
+            if(userToRemove != null)
+            {
+                userSoundModels.Remove(userToRemove);
+                await Clients.All.SendAsync("ReceiveObject", userSoundModels);
+            }
+        }
+
         public async Task<bool> JoinGroup(string groupName)
         {
             if (AvailableGroups.Contains(groupName))
@@ -47,9 +80,9 @@ namespace AudioSync.Web.Hubs
             await Groups.AddToGroupAsync(Context.ConnectionId,groupName);
             AvailableGroups.Add(groupName);
             Phrase = Regex.Replace(phrase.Trim(), @"[^0-9a-zA-Z]+", "");
+            await Clients.Client(Context.ConnectionId).SendAsync(groupName);
             return groupName;
         }
-
 
         public void SendPhraseToUserInWordFormat()
         {
@@ -75,9 +108,10 @@ namespace AudioSync.Web.Hubs
                   
         }
 
-        public void PlaySound()
+        public async Task PlaySound()
         {
             timeOfSoundPlayed = DateTime.Now;
+            await Clients.All.SendAsync("SoundPlayed", string.Format("Sound played at {0}", timeOfSoundPlayed));
         }
 
         public void ReportSoundPlayed(string userIdentifier)
@@ -89,11 +123,5 @@ namespace AudioSync.Web.Hubs
             });
         }
         #endregion
-    }
-
-    public class UserSoundModel
-    {
-        public DateTime TimeOfReceiving { get; set; }
-        public string UserIdentifier { get; set; }
     }
 }

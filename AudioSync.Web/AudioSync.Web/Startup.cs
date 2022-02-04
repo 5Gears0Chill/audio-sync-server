@@ -1,5 +1,6 @@
 using AudioSync.API.DependencyInjection;
 using AudioSync.Repository.DbContexts;
+using AudioSync.Web.Hubs;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -61,6 +62,11 @@ namespace AudioSync.Web
             app.UseAuthorization();
 
             app.UseHangfireDashboard("/hangfire");
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<ConnectionHub>("/connectionHub");
+            });
 
             app.UseEndpoints(endpoints =>
             {
