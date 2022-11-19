@@ -89,11 +89,6 @@ namespace AudioSync.Web.Controllers
             }
             return null;
         }
-
-        private async Task SendMessageToSockets(string message)
-        {
-
-        }
     }
 
     public class Data
